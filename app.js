@@ -1297,16 +1297,71 @@ const SAMPLE_TRENDING = [
     { id: 'ktvTqknDob4', title: 'Radioactive', artist: 'Imagine Dragons', thumbnail: 'https://img.youtube.com/vi/ktvTqknDob4/mqdefault.jpg', duration: '4:22' }
 ];
 
+// Trending/Quick Picks - Fetch from Invidious API
+const POPULAR_MUSIC_IDS = [
+    'kJQP7kiw5Fk', 'JGwWNGJdvx8', 'RgKAFK5djSk', 'OPf0YbXqDm0', 
+    'hT_nvWreIhg', 'nfWlot6h_JM', 'CevxZvSJLk8', '8UVNT4wvIGY',
+    '09R8_2nJtjg', 'pRpeEdMmmQ0', '0KSOMA3QBU0', 'ktvTqknDob4',
+    'fJ9rUzIMcZQ', '2Vv-BfVoq4g', 'pRpeEdMmmQ0', '9bZkp7q19f0',
+    'DK_0jXPuIr0', '60ItHLz5WEA', 'YqeW9_5kURI', 'nIjVuRTm-dc'
+];
+
 async function loadTrendingSongs() {
-    // Use sample data for standalone mode
     const container = document.getElementById('quickPicks');
     container.innerHTML = '<div class="loading">Loading...</div>';
     
-    // Simulate loading delay
-    setTimeout(() => {
-        displayQuickPicks(SAMPLE_TRENDING);
-        displayTrending(SAMPLE_TRENDING);
-    }, 500);
+    try {
+        // Try to fetch from Invidious trending
+        let videos = [];
+        for (const instance of INVIDIOUS_INSTANCES) {
+            try {
+                const response = await fetch(`${instance}/api/v1/trending?type=music`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    videos = data.slice(0, 12).map(item => ({
+                        id: item.videoId,
+                        title: item.title,
+                        artist: item.author,
+                        thumbnail: `https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg`,
+                        duration: formatDuration(item.lengthSeconds)
+                    }));
+                    break;
+                }
+            } catch (e) {
+                continue;
+            }
+        }
+        
+        // Fallback to popular songs if API fails
+        if (videos.length === 0) {
+            videos = POPULAR_MUSIC_IDS.slice(0, 12).map((id, index) => ({
+                id: id,
+                title: 'Popular Music #' + (index + 1),
+                artist: 'Various Artists',
+                thumbnail: `https://img.youtube.com/vi/${id}/mqdefault.jpg`,
+                duration: '3:30'
+            }));
+        }
+        
+        displayQuickPicks(videos);
+        displayTrending(videos);
+    } catch (error) {
+        console.error('Failed to load trending:', error);
+        // Show fallback
+        const fallbackVideos = POPULAR_MUSIC_IDS.slice(0, 8).map((id, index) => ({
+            id: id,
+            title: 'Popular Song ' + (index + 1),
+            artist: 'Music',
+            thumbnail: `https://img.youtube.com/vi/${id}/mqdefault.jpg`,
+            duration: '3:30'
+        }));
+        displayQuickPicks(fallbackVideos);
+        displayTrending(fallbackVideos);
+    }
 }
 
 function displayQuickPicks(videos) {

@@ -1781,14 +1781,132 @@ input:checked + .slider:before {
     }
 }
 
-/* Animation for playing indicator */
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-.playing-indicator {
-    animation: pulse 1s ease infinite;
+/* Mobile Responsive Fixes */
+@media (max-width: 480px) {
+    .card {
+        min-width: 140px;
+        max-width: 140px;
+    }
+    
+    .card-title {
+        font-size: 12px;
+    }
+    
+    .card-artist {
+        font-size: 11px;
+    }
+    
+    .full-title {
+        font-size: 18px;
+    }
+    
+    .full-artist {
+        font-size: 14px;
+    }
+    
+    .mini-title {
+        font-size: 13px;
+    }
+    
+    .mini-artist {
+        font-size: 11px;
+    }
+    
+    .control-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+    
+    .play-pause-btn {
+        width: 64px;
+        height: 64px;
+        font-size: 24px;
+    }
+    
+    .full-player-controls {
+        gap: var(--spacing-md);
+    }
+    
+    .timer-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .modal-content {
+        max-width: 100%;
+        margin: var(--spacing-md);
+    }
+    
+    .playlist-grid,
+    .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-sm);
+    }
+    
+    .card-grid .card {
+        min-width: auto;
+    }
+    
+    .header-title {
+        font-size: 18px;
+    }
+    
+    .greeting-section h1 {
+        font-size: 20px;
+    }
+    
+    .section-header h2 {
+        font-size: 16px;
+    }
+    
+    .song-title {
+        font-size: 13px;
+    }
+    
+    .song-artist {
+        font-size: 11px;
+    }
+    
+    .mini-thumbnail {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .mini-content {
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+    
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .btn-icon i {
+        font-size: 16px;
+    }
+    
+    .mini-play-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .mini-play-btn i {
+        font-size: 16px;
+    }
+    
+    .library-tabs .tab-btn {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 13px;
+    }
+    
+    .bottom-nav .nav-item {
+        font-size: 11px;
+    }
+    
+    .bottom-nav .nav-icon {
+        width: 20px;
+        height: 20px;
+    }
 }
 
 /* Download Progress */
