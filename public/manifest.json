@@ -1,0 +1,22 @@
+{
+  "name": "PMusic",
+  "short_name": "PMusic",
+  "description": "Material 3 Music Player - No login required",
+  "start_url": "/pmusic/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
