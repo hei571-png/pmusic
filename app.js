@@ -307,6 +307,11 @@ async function handleSearchInput(e) {
     }
 }
 
+// Standalone mode - no backend required
+const USE_YOUTUBE_API = false; // Set to true if you have a YouTube API key
+const YOUTUBE_API_KEY = ''; // Add your API key here if you have one
+
+// Search using YouTube suggest or fallback
 async function performSearch(query) {
     try {
         // Check cache
@@ -316,13 +321,35 @@ async function performSearch(query) {
             return;
         }
         
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        const data = await response.json();
+        // For now, show a message that users need to enter video IDs directly
+        // or we can implement a simple search workaround
+        showToast('Search requires backend server. Use direct video links or run locally.');
         
-        if (data.videos) {
-            searchCache.set(query, data.videos);
-            displaySearchResults(data.videos);
-            showView('search');
+        // Show manual entry option
+        const container = document.getElementById('searchResults');
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-search" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                <p>Search requires a backend server</p>
+                <p style="font-size: 14px; opacity: 0.7; margin-top: 8px;">
+                    On GitHub Pages, you can still play music by:<br>
+                    1. Entering a YouTube video ID in search<br>
+                    2. Using the Trending section (loaded from sample data)
+                </p>
+            </div>
+        `;
+        showView('search');
+        
+        // If query looks like a YouTube ID (11 chars), try to play it
+        if (query.length === 11 && /^[a-zA-Z0-9_-]+$/.test(query)) {
+            const videoInfo = {
+                id: query,
+                title: 'Video ' + query,
+                artist: 'Unknown',
+                thumbnail: `https://img.youtube.com/vi/${query}/mqdefault.jpg`
+            };
+            playVideo(query, videoInfo);
+            showToast('Playing video: ' + query);
         }
     } catch (error) {
         console.error('Search error:', error);
@@ -436,12 +463,18 @@ async function playVideo(id, songInfo = null) {
         songInfo = queueItem || likedItem || historyItem || downloadItem;
         
         if (!songInfo) {
-            try {
-                const response = await fetch(`/api/video/${id}`);
-                songInfo = await response.json();
-                videoCache.set(id, songInfo);
-            } catch (e) {
-                songInfo = { id, title: 'Unknown', artist: 'Unknown' };
+            // Try to get info from localStorage first
+            const cached = localStorage.getItem(`video_${id}`);
+            if (cached) {
+                songInfo = JSON.parse(cached);
+            } else {
+                // Create basic info from ID
+                songInfo = { 
+                    id: id, 
+                    title: 'Video ' + id, 
+                    artist: 'Unknown',
+                    thumbnail: `https://img.youtube.com/vi/${id}/mqdefault.jpg`
+                };
             }
         }
     }
@@ -1186,21 +1219,32 @@ function removeFromOptions() {
 }
 
 // Trending/Quick Picks
+// Trending/Quick Picks - Sample data for standalone mode
+const SAMPLE_TRENDING = [
+    { id: 'kJQP7kiw5Fk', title: 'Despacito', artist: 'Luis Fonsi', thumbnail: 'https://img.youtube.com/vi/kJQP7kiw5Fk/mqdefault.jpg', duration: '4:42' },
+    { id: 'JGwWNGJdvx8', title: 'Shape of You', artist: 'Ed Sheeran', thumbnail: 'https://img.youtube.com/vi/JGwWNGJdvx8/mqdefault.jpg', duration: '4:24' },
+    { id: 'RgKAFK5djSk', title: 'See You Again', artist: 'Wiz Khalifa', thumbnail: 'https://img.youtube.com/vi/RgKAFK5djSk/mqdefault.jpg', duration: '3:58' },
+    { id: 'OPf0YbXqDm0', title: 'Uptown Funk', artist: 'Mark Ronson', thumbnail: 'https://img.youtube.com/vi/OPf0YbXqDm0/mqdefault.jpg', duration: '4:30' },
+    { id: 'hT_nvWreIhg', title: 'Counting Stars', artist: 'OneRepublic', thumbnail: 'https://img.youtube.com/vi/hT_nvWreIhg/mqdefault.jpg', duration: '4:44' },
+    { id: 'nfWlot6h_JM', title: 'Roar', artist: 'Katy Perry', thumbnail: 'https://img.youtube.com/vi/nfWlot6h_JM/mqdefault.jpg', duration: '4:30' },
+    { id: 'CevxZvSJLk8', title: 'Dark Horse', artist: 'Katy Perry', thumbnail: 'https://img.youtube.com/vi/CevxZvSJLk8/mqdefault.jpg', duration: '3:45' },
+    { id: '8UVNT4wvIGY', title: 'Hello', artist: 'Adele', thumbnail: 'https://img.youtube.com/vi/8UVNT4wvIGY/mqdefault.jpg', duration: '6:07' },
+    { id: '09R8_2nJtjg', title: 'Sugar', artist: 'Maroon 5', thumbnail: 'https://img.youtube.com/vi/09R8_2nJtjg/mqdefault.jpg', duration: '5:02' },
+    { id: 'pRpeEdMmmQ0', title: 'Shake It Off', artist: 'Taylor Swift', thumbnail: 'https://img.youtube.com/vi/pRpeEdMmmQ0/mqdefault.jpg', duration: '4:02' },
+    { id: '0KSOMA3QBU0', title: 'Gangnam Style', artist: 'PSY', thumbnail: 'https://img.youtube.com/vi/0KSOMA3QBU0/mqdefault.jpg', duration: '4:13' },
+    { id: 'ktvTqknDob4', title: 'Radioactive', artist: 'Imagine Dragons', thumbnail: 'https://img.youtube.com/vi/ktvTqknDob4/mqdefault.jpg', duration: '4:22' }
+];
+
 async function loadTrendingSongs() {
-    try {
-        const container = document.getElementById('quickPicks');
-        container.innerHTML = '<div class="loading">Loading...</div>';
-        
-        const response = await fetch('/api/trending');
-        const data = await response.json();
-        
-        if (data.videos && data.videos.length > 0) {
-            displayQuickPicks(data.videos);
-            displayTrending(data.videos);
-        }
-    } catch (error) {
-        console.error('Failed to load trending:', error);
-    }
+    // Use sample data for standalone mode
+    const container = document.getElementById('quickPicks');
+    container.innerHTML = '<div class="loading">Loading...</div>';
+    
+    // Simulate loading delay
+    setTimeout(() => {
+        displayQuickPicks(SAMPLE_TRENDING);
+        displayTrending(SAMPLE_TRENDING);
+    }, 500);
 }
 
 function displayQuickPicks(videos) {
