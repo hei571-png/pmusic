@@ -1,27 +1,62 @@
 name: Build Android APK
+
 on:
   push:
-    branches: [ master ]
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-java@v3
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-    - uses: actions/setup-node@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
-    - run: npm ci
-    - run: npx cap sync android
-    - run: |
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Sync Capacitor
+      run: npx cap sync android
+    
+    - name: Grant execute permission for gradlew
+      run: chmod +x android/gradlew
+    
+    - name: Build Release APK
+      run: |
         cd android
-        chmod +x gradlew
         ./gradlew assembleRelease
-    - uses: actions/upload-artifact@v3
+    
+    - name: Sign APK
+      run: |
+        cd android
+        if [ ! -f debug.keystore ]; then
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+        fi
+        jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore debug.keystore -storepass android app/build/outputs/apk/release/app-release-unsigned.apk androiddebugkey || true
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
       with:
         name: pmusic-apk
         path: android/app/build/outputs/apk/release/*.apk
+    
+    - name: Upload signed APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: pmusic-apk-signed
+        path: android/app/build/outputs/apk/release/*-signed.apk
+        if-no-files-found: ignore
