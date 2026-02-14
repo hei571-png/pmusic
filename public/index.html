@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>PMusic</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-logo">
+                <img src="logo.png" alt="PMusic" class="header-logo-img">
+                <span class="header-title">PMusic</span>
+            </div>
+            <div class="header-actions">
+                <button id="themeToggle" class="header-btn" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button id="settingsBtn" class="header-btn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="search-bar-container">
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search songs, artists, albums..." autocomplete="off">
+                <button id="clearSearch" class="clear-btn hidden"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Home View -->
+            <div id="homeView" class="view active">
+                <div class="greeting-section">
+                    <h1 id="greetingText">Good morning</h1>
+                </div>
+                
+                <div class="quick-picks-section">
+                    <div class="section-header">
+                        <h2>Quick Picks</h2>
+                    </div>
+                    <div id="quickPicks" class="chips-container">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Trending Now</h2>
+                    </div>
+                    <div id="trendingSongs" class="horizontal-scroll">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Recently Played</h2>
+                    </div>
+                    <div id="recentlyPlayed" class="card-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Your Playlists</h2>
+                        <button class="btn-icon small" id="createPlaylistBtn">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div id="playlistsGrid" class="playlist-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explore View -->
+            <div id="exploreView" class="view">
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Discover</h2>
+                    </div>
+                    <div id="discoverSongs" class="card-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Library View -->
+            <div id="libraryView" class="view">
+                <div class="library-header">
+                    <h1>Your Library</h1>
+                </div>
+                <div class="library-tabs">
+                    <button class="tab-btn active" data-tab="liked">
+                        <i class="fas fa-heart"></i>
+                        <span>Liked</span>
+                    </button>
+                    <button class="tab-btn" data-tab="playlists">
+                        <i class="fas fa-list-ul"></i>
+                        <span>Playlists</span>
+                    </button>
+                    <button class="tab-btn" data-tab="history">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </button>
+                    <button class="tab-btn" data-tab="downloads">
+                        <i class="fas fa-download"></i>
+                        <span>Offline</span>
+                    </button>
+                </div>
+                
+                <div class="tab-content active" id="likedTab">
+                    <div class="liked-header">
+                        <div class="liked-info">
+                            <div class="liked-cover">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="liked-details">
+                                <h2>Liked Songs</h2>
+                                <span id="likedCount">0 songs</span>
+                            </div>
+                        </div>
+                        <button id="playLiked" class="fab-play">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                    <div id="likedSongsList" class="song-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="playlistsTab">
+                    <div id="playlistsList" class="playlist-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="historyTab">
+                    <div id="historyList" class="song-list">
+                        <!-- History populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="tab-content" id="downloadsTab">
+                    <div id="downloadsList" class="song-list">
+                        <!-- Downloads populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results View -->
+            <div id="searchView" class="view">
+                <div class="search-categories">
+                    <button class="chip active" data-filter="all">All</button>
+                    <button class="chip" data-filter="songs">Songs</button>
+                    <button class="chip" data-filter="artists">Artists</button>
+                    <button class="chip" data-filter="videos">Videos</button>
+                </div>
+                <div id="searchResults" class="song-list">
+                    <!-- Search results -->
+                </div>
+            </div>
+
+            <!-- Queue View -->
+            <div id="queueView" class="view">
+                <div class="queue-header">
+                    <h1>Playing Queue</h1>
+                    <div class="queue-actions">
+                        <button id="shuffleQueue" class="btn-text">
+                            <i class="fas fa-random"></i> Shuffle
+                        </button>
+                        <button id="clearQueue" class="btn-text">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                </div>
+                <div id="queueList" class="song-list">
+                    <!-- Queue -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Mini Player -->
+        <div class="mini-player" id="miniPlayer">
+            <div class="mini-progress">
+                <div class="mini-progress-bar" id="miniProgressBar">
+                    <div class="mini-progress-fill" id="miniProgressFill"></div>
+                </div>
+            </div>
+            <div class="mini-content">
+                <div class="mini-info" id="miniPlayerInfo">
+                    <div id="miniThumbnail" class="mini-thumbnail"></div>
+                    <div class="mini-track-info">
+                        <div id="miniTitle" class="mini-title">No song playing</div>
+                        <div id="miniArtist" class="mini-artist">-</div>
+                    </div>
+                </div>
+                <div class="mini-controls">
+                    <button id="miniLikeBtn" class="mini-btn">
+                        <i class="far fa-heart"></i>
+                    </button>
+                    <button id="miniPlayPauseBtn" class="mini-play-btn">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button id="miniNextBtn" class="mini-btn">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Screen Player -->
+        <div class="full-player" id="fullPlayer">
+            <div class="full-player-bg" id="fullPlayerBg"></div>
+            <div class="full-player-content">
+                <div class="full-player-header">
+                    <button id="collapsePlayer" class="full-player-btn">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <span class="full-player-queue">Playing from <span id="playingFrom">Quick Picks</span></span>
+                    <button id="fullPlayerMore" class="full-player-btn">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                </div>
+
+                <div class="full-player-artwork">
+                    <div id="fullThumbnail" class="full-thumbnail"></div>
+                </div>
+
+                <div class="full-player-info">
+                    <div class="full-track-info">
+                        <h2 id="fullTitle" class="full-title">No song playing</h2>
+                        <p id="fullArtist" class="full-artist">-</p>
+                    </div>
+                    <button id="fullLikeBtn" class="full-like-btn">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+
+                <div class="full-player-progress">
+                    <div class="progress-bar-container" id="fullProgressBar">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="fullProgressFill"></div>
+                        </div>
+                    </div>
+                    <div class="time-display">
+                        <span id="fullCurrentTime">0:00</span>
+                        <span id="fullTotalTime">0:00</span>
+                    </div>
+                </div>
+
+                <div class="full-player-controls">
+                    <button id="fullShuffleBtn" class="control-btn">
+                        <i class="fas fa-random"></i>
+                    </button>
+                    <button id="fullPrevBtn" class="control-btn large">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button id="fullPlayPauseBtn" class="play-pause-btn">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button id="fullNextBtn" class="control-btn large">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+                    <button id="fullRepeatBtn" class="control-btn">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+
+                <div class="full-player-extras">
+                    <button id="lyricsBtn" class="extra-btn">
+                        <i class="fas fa-align-center"></i>
+                        <span>Lyrics</span>
+                    </button>
+                    <button id="queueBtn" class="extra-btn">
+                        <i class="fas fa-list"></i>
+                        <span>Queue</span>
+                    </button>
+                    <button id="sleepTimerBtn" class="extra-btn">
+                        <i class="fas fa-clock"></i>
+                        <span>Sleep Timer</span>
+                    </button>
+                    <button id="downloadBtn" class="extra-btn">
+                        <i class="fas fa-download"></i>
+                        <span>Download</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lyrics Panel -->
+            <div class="lyrics-panel hidden" id="lyricsPanel">
+                <div class="lyrics-header">
+                    <h3>Lyrics</h3>
+                    <button id="closeLyrics" class="btn-icon">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="lyrics-content" id="lyricsContent">
+                    <div class="lyrics-placeholder">
+                        <i class="fas fa-align-center"></i>
+                        <p>Lyrics not available for this song</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" data-view="home">
+                <div class="nav-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <span>Home</span>
+            </a>
+            <a href="#" class="nav-item" data-view="explore">
+                <div class="nav-icon">
+                    <i class="fas fa-compass"></i>
+                </div>
+                <span>Explore</span>
+            </a>
+            <a href="#" class="nav-item" data-view="library">
+                <div class="nav-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <span>Library</span>
+            </a>
+            <a href="#" class="nav-item" data-view="queue">
+                <div class="nav-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <span>Queue</span>
+            </a>
+        </nav>
+
+        <!-- Hidden YouTube Player -->
+        <div id="youtubePlayer" class="hidden"></div>
+    </div>
+
+    <!-- Queue Mini Panel (slide up) -->
+    <div id="queuePanel" class="bottom-sheet hidden">
+        <div class="bottom-sheet-overlay"></div>
+        <div class="bottom-sheet-content">
+            <div class="bottom-sheet-handle"></div>
+            <div class="bottom-sheet-header">
+                <h3>Playing Queue</h3>
+                <button id="closeQueuePanel" class="btn-icon">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="queuePanelList" class="song-list"></div>
+        </div>
+    </div>
+
+    <!-- Create Playlist Modal -->
+    <div id="createPlaylistModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Playlist</h3>
+                <button id="closeCreatePlaylistModal" class="btn-icon">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="playlistNameInput">Name</label>
+                    <input type="text" id="playlistNameInput" placeholder="My Playlist" maxlength="50">
+                </div>
+                <div class="modal-actions">
+                    <button id="cancelCreatePlaylist" class="btn-text">Cancel</button>
+                    <button id="confirmCreatePlaylist" class="btn-primary">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sleep Timer Modal -->
+    <div id="sleepTimerModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h3>Sleep Timer</h3>
+                <button id="closeSleepTimerModal" class="btn-icon">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="timer-options">
+                    <button class="timer-option" data-time="5">5 minutes</button>
+                    <button class="timer-option" data-time="10">10 minutes</button>
+                    <button class="timer-option" data-time="15">15 minutes</button>
+                    <button class="timer-option" data-time="30">30 minutes</button>
+                    <button class="timer-option" data-time="45">45 minutes</button>
+                    <button class="timer-option" data-time="60">1 hour</button>
+                </div>
+                <div id="activeTimerDisplay" class="active-timer hidden">
+                    <span>Timer ends in <span id="timerCountdown">--:--</span></span>
+                    <button id="cancelTimer" class="btn-text">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button id="closeSettingsModal" class="btn-icon">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4>Playback</h4>
+                    <div class="setting-item">
+                        <span>Skip Silence</span>
+                        <label class="switch">
+                            <input type="checkbox" id="skipSilenceToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span>Audio Normalization</span>
+                        <label class="switch">
+                            <input type="checkbox" id="audioNormalizeToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h4>Audio Effects</h4>
+                    <div class="setting-item slider-setting">
+                        <span>Tempo</span>
+                        <input type="range" id="tempoSlider" min="0.5" max="2" step="0.1" value="1">
+                        <span id="tempoValue">1.0x</span>
+                    </div>
+                    <div class="setting-item slider-setting">
+                        <span>Pitch</span>
+                        <input type="range" id="pitchSlider" min="-12" max="12" step="1" value="0">
+                        <span id="pitchValue">0</span>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h4>Appearance</h4>
+                    <div class="setting-item">
+                        <span>Dark Theme</span>
+                        <label class="switch">
+                            <input type="checkbox" id="darkThemeToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span>Pure Black</span>
+                        <label class="switch">
+                            <input type="checkbox" id="pureBlackToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h4>Storage</h4>
+                    <div class="storage-info">
+                        <span>Offline Songs</span>
+                        <span id="offlineCount">0 songs</span>
+                    </div>
+                    <button id="clearOfflineBtn" class="btn-text danger">Clear Offline Songs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add to Playlist Menu -->
+    <div id="addToPlaylistMenu" class="bottom-sheet hidden">
+        <div class="bottom-sheet-overlay"></div>
+        <div class="bottom-sheet-content">
+            <div class="bottom-sheet-handle"></div>
+            <h3>Add to Playlist</h3>
+            <div id="addToPlaylistList" class="playlist-select-list">
+                <!-- Populated dynamically -->
+            </div>
+            <button id="createNewPlaylistFromMenu" class="btn-primary full-width">
+                <i class="fas fa-plus"></i> Create New Playlist
+            </button>
+        </div>
+    </div>
+
+    <!-- Song Options Menu -->
+    <div id="songOptionsMenu" class="bottom-sheet hidden">
+        <div class="bottom-sheet-overlay"></div>
+        <div class="bottom-sheet-content">
+            <div class="bottom-sheet-handle"></div>
+            <h3 id="songOptionsTitle">Song Options</h3>
+            <div class="options-list">
+                <button class="option-btn" id="optPlayNext">
+                    <i class="fas fa-play-circle"></i>
+                    <span>Play Next</span>
+                </button>
+                <button class="option-btn" id="optAddToQueue">
+                    <i class="fas fa-list"></i>
+                    <span>Add to Queue</span>
+                </button>
+                <button class="option-btn" id="optAddToPlaylist">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add to Playlist</span>
+                </button>
+                <button class="option-btn" id="optDownload">
+                    <i class="fas fa-download"></i>
+                    <span>Download</span>
+                </button>
+                <button class="option-btn" id="optGoToArtist">
+                    <i class="fas fa-user"></i>
+                    <span>Go to Artist</span>
+                </button>
+                <button class="option-btn danger" id="optRemove">
+                    <i class="fas fa-trash"></i>
+                    <span>Remove</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="app.js"></script>
+</body>
+</html>
