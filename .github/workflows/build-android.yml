@@ -1,0 +1,27 @@
+name: Build Android APK
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - run: npm ci
+    - run: npx cap sync android
+    - run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleRelease
+    - uses: actions/upload-artifact@v3
+      with:
+        name: pmusic-apk
+        path: android/app/build/outputs/apk/release/*.apk
