@@ -2,12 +2,13 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
     - uses: actions/checkout@v4
     
@@ -23,19 +24,19 @@ jobs:
         node-version: '18'
     
     - name: Install dependencies
-      run: npm ci
+      run: npm install
     
-    - name: Sync Capacitor
+    - name: Sync Capacitor Android
       run: npx cap sync android
     
     - name: Build APK
       run: |
         cd android
         chmod +x gradlew
-        ./gradlew assembleRelease
+        ./gradlew assembleDebug --stacktrace
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: pmusic-apk
-        path: android/app/build/outputs/apk/release/*.apk
+        name: PMusic-APK
+        path: android/app/build/outputs/apk/debug/app-debug.apk
