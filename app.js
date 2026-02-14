@@ -307,11 +307,20 @@ async function handleSearchInput(e) {
     }
 }
 
-// Standalone mode - no backend required
-const USE_YOUTUBE_API = false; // Set to true if you have a YouTube API key
-const YOUTUBE_API_KEY = ''; // Add your API key here if you have one
+// Standalone mode - using free Invidious API for search
+const INVIDIOUS_INSTANCES = [
+    'https://iv.datura.network',
+    'https://iv.nboeck.de',
+    'https://iv.melmac.space'
+];
 
-// Search using YouTube suggest or fallback
+let currentInvidiousIndex = 0;
+
+function getInvidiousUrl() {
+    return INVIDIOUS_INSTANCES[currentInvidiousIndex];
+}
+
+// Search using Invidious API (free, no auth required)
 async function performSearch(query) {
     try {
         // Check cache
@@ -321,40 +330,66 @@ async function performSearch(query) {
             return;
         }
         
-        // For now, show a message that users need to enter video IDs directly
-        // or we can implement a simple search workaround
-        showToast('Search requires backend server. Use direct video links or run locally.');
+        showToast('Searching...');
         
-        // Show manual entry option
-        const container = document.getElementById('searchResults');
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-search" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-                <p>Search requires a backend server</p>
-                <p style="font-size: 14px; opacity: 0.7; margin-top: 8px;">
-                    On GitHub Pages, you can still play music by:<br>
-                    1. Entering a YouTube video ID in search<br>
-                    2. Using the Trending section (loaded from sample data)
-                </p>
-            </div>
-        `;
-        showView('search');
+        // Try Invidious instances
+        let videos = [];
+        for (let i = 0; i < INVIDIOUS_INSTANCES.length; i++) {
+            try {
+                const instance = INVIDIOUS_INSTANCES[i];
+                const response = await fetch(`${instance}/api/v1/search?q=${encodeURIComponent(query)}&type=video`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    videos = data.map(item => ({
+                        id: item.videoId,
+                        title: item.title,
+                        artist: item.author,
+                        thumbnail: item.videoThumbnails?.[0]?.url || `https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg`,
+                        duration: formatDuration(item.lengthSeconds)
+                    })).slice(0, 20);
+                    break;
+                }
+            } catch (e) {
+                console.log(`Instance ${i} failed, trying next...`);
+                continue;
+            }
+        }
         
-        // If query looks like a YouTube ID (11 chars), try to play it
-        if (query.length === 11 && /^[a-zA-Z0-9_-]+$/.test(query)) {
-            const videoInfo = {
-                id: query,
-                title: 'Video ' + query,
-                artist: 'Unknown',
-                thumbnail: `https://img.youtube.com/vi/${query}/mqdefault.jpg`
-            };
-            playVideo(query, videoInfo);
-            showToast('Playing video: ' + query);
+        if (videos.length > 0) {
+            searchCache.set(query, videos);
+            displaySearchResults(videos);
+            showView('search');
+            showToast(`Found ${videos.length} songs`);
+        } else {
+            // Fallback: try to play if it looks like a video ID
+            if (query.length === 11 && /^[a-zA-Z0-9_-]+$/.test(query)) {
+                const videoInfo = {
+                    id: query,
+                    title: 'Video ' + query,
+                    artist: 'Unknown',
+                    thumbnail: `https://img.youtube.com/vi/${query}/mqdefault.jpg`
+                };
+                playVideo(query, videoInfo);
+                showToast('Playing video: ' + query);
+            } else {
+                showToast('Search failed. Try a YouTube video ID (11 characters)');
+            }
         }
     } catch (error) {
         console.error('Search error:', error);
         showToast('Search failed. Please try again.');
     }
+}
+
+function formatDuration(seconds) {
+    if (!seconds) return '';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 function displaySearchResults(videos) {
@@ -428,6 +463,33 @@ function onYouTubeIframeAPIReady() {
 function onPlayerReady(event) {
     player.setVolume(currentVolume);
     updateVolumeDisplay();
+    
+    // Enable background audio for mobile
+    enableBackgroundAudio();
+}
+
+// Enable audio to continue playing when app is in background
+function enableBackgroundAudio() {
+    // Request audio focus
+    if (player && player.setPlaybackQuality) {
+        player.setPlaybackQuality('small'); // Lower quality for better streaming
+    }
+    
+    // Handle visibility change (tab switching)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && isPlaying) {
+            // Keep audio playing when tab is hidden
+            console.log('Tab hidden, maintaining audio playback');
+        }
+    });
+    
+    // Handle beforeunload to warn user
+    window.addEventListener('beforeunload', (e) => {
+        if (isPlaying) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
 }
 
 function onPlayerStateChange(event) {
